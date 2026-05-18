@@ -2,7 +2,7 @@
 
 ![Vector Grace](assets/logo.png)
 
-**GRACE (Graph-RAG Anchored Code Engineering)** — методология навигации LLM-агентов по кодовой базе через контракты, семантическую разметку и граф знаний.
+**GRACE (Graph-RAG Anchored Code Engineering)** — методология навигации LLM-агентов по кодовой базе через контракты, семантическую разметку и граф знаний. Собрано по крупицам в Telegram-канале «AI Projects» Владимира Иванова.
 
 ## Что внутри
 
@@ -27,6 +27,5 @@
 ## Основание
 
 - Автор: Владимир Иванов (Telegram-канал «AI Projects»)
-- **Собрано по крупицам в Telegram-канале «AI Projects» Владимира Иванова**
 - GRACE 2.0: Doxygen для Python, Wenyan-prompting, GREP-hints
 - Подтверждено исследованиями: ETH Zurich (AGENTS.md −3%), PwC (grep > vector)
