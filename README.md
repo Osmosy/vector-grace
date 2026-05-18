@@ -27,5 +27,6 @@
 ## Основание
 
 - Автор: Владимир Иванов (Telegram-канал «AI Projects»)
+- **Собрано по крупицам в Telegram-канале «AI Projects» Владимира Иванова**
 - GRACE 2.0: Doxygen для Python, Wenyan-prompting, GREP-hints
 - Подтверждено исследованиями: ETH Zurich (AGENTS.md −3%), PwC (grep > vector)
