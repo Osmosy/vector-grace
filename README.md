@@ -29,3 +29,30 @@
 - Автор: Владимир Иванов (Telegram-канал «AI Projects»)
 - GRACE 2.0: Doxygen для Python, Wenyan-prompting, GREP-hints
 - Подтверждено исследованиями: ETH Zurich (AGENTS.md −3%), PwC (grep > vector)
+
+## GRACE Skills (Baho73 marketplace)
+
+Импортированы 18 операционных GRACE-скиллов:
+
+| Скилл | Назначение |
+|---|---|
+| `grace-init` | Разворачивание структуры GRACE-проекта |
+| `grace-plan` | Архитектурное планирование (XML-артефакты) |
+| `grace-execute` | Пошаговое выполнение плана |
+| `grace-multiagent-execute` | Параллельное выполнение волнами |
+| `grace-reviewer` | 5-осевое ревью целостности |
+| `grace-afk` | Автономный режим с эскалацией |
+| `grace-fix` | Prove-It отладка через семантическую навигацию |
+| `grace-refresh` | Синхронизация артефактов при дрифте |
+| `grace-verification` | Тестирование и log-driven верификация |
+| `grace-explainer` | Справочник по методологии |
+| `grace-bootstrap` | Активация GRACE в репозитории |
+| `grace-evolve` | Эволюционный поиск решений |
+| `grace-refactor` | Безопасный рефакторинг |
+| `grace-status` | Проверка здоровья проекта |
+| `grace-cli` | CLI-инструменты |
+| `grace-ask` | Вопросы к проекту через GRACE |
+| `grace-ask-human` | Эскалация в Telegram |
+| `grace-setup-subagents` | Пресеты субагентов |
+
+Источник: https://github.com/Baho73/grace-marketplace-2
