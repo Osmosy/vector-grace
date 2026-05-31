@@ -90,8 +90,22 @@ Every iteration:
    - yellow → rollback the step (`git reset --hard HEAD~1` on your afk branch ONLY), journal the rollback,
      next iteration
    - red → escalate to Telegram if budget allows; else defer and stop
-7. **Checkpoint check.** If `checkpointMinutes` have passed since start or last checkpoint, run
-   a summary (tick, lint, journal entry `class=checkpoint`).
+7. **Checkpoint check.** If `checkpointMinutes` have passed since start or last checkpoint:
+   - Run `tick`, `lint`, journal entry `class=checkpoint`
+   - **Consolidate session context**: if Cognee is configured for the project, feed the session journal into Cognee's knowledge graph:
+     ```bash
+     cd $PROJECT_ROOT && COGNEE_SKIP_CONNECTION_TEST=true \
+       GRAPH_DATABASE_PROVIDER=ladybug GRAPH_DATABASE_SUBPROCESS_ENABLED=false \
+       python -c "
+     import asyncio
+     async def consolidate():
+         import cognee
+         await cognee.add(open('docs/decisions.md').read())
+         await cognee.cognify()
+     asyncio.run(consolidate())
+     "
+     ```
+     This consolidates the session's operational memory, enabling cross-checkpoint recall. See GRACE Principle #7 (Context Consolidation) and `grace-explainer/references/context-consolidation.md`.
 
 ## Autonomy Matrix
 

@@ -15,7 +15,7 @@ LLMs lose context between sessions. Without structure:
 - They can't trace bugs through the codebase
 - They drift from the original architecture over time
 
-GRACE provides four interlocking systems that fix this:
+GRACE provides five interlocking systems that fix this:
 
 ```
 Knowledge Graph (docs/knowledge-graph.xml)
@@ -28,9 +28,11 @@ Verification Plan (docs/verification-plan.xml)
     defines HOW correctness, traces, and logs are proven
 Operational Packets (docs/operational-packets.xml)
     standardizes execution packets, deltas, and failure handoff
+Context Consolidation (Cognee: add → cognify → search)
+    consolidates session context into a knowledge graph + vector index
 ```
 
-## Six Core Principles
+## Seven Core Principles
 
 ### 1. Never Write Code Without a Contract
 Before generating any module, create its MODULE_CONTRACT with PURPOSE, SCOPE, INPUTS, OUTPUTS. The contract is the source of truth — code implements the contract, not the other way around.
@@ -58,6 +60,23 @@ Testing, traces, and log markers are not cleanup work. They are part of the arch
 - **Metrics**: the contract plus verification evidence tell you if you're done
 
 You have freedom in HOW, not in WHAT. If a contract seems wrong — propose a change, don't silently deviate.
+
+### 7. Context Consolidation
+
+LLMs lose focus in long sessions — early facts fall out of the attention window, and agents drift from original goals. The fix: periodically consolidate raw context into structured memory (graph + vectors).
+
+**Research**: Lee, McLeish, Goldstein, Fanti — "Do Language Models Need Sleep? Offline Recurrence for Improved Online Inference" (arXiv:2605.26099). Periodic context compression into vector representations improves LLM navigation in long sessions — analogous to human memory consolidation during sleep.
+
+**Implementation**: [Cognee](https://github.com/topoteretes/cognee) (Memory Control Plane) — `add()` stores facts, `cognify()` consolidates into a knowledge graph (Ladybug) + vector index (LanceDB), `search()` retrieves relevant context.
+
+**When to consolidate**:
+- In autonomous sessions (`grace-afk`): every checkpoint (default 30 minutes)
+- In manual sessions: at phase transitions (plan → execute, execute → refactor)
+- When session exceeds ~50 messages (context degradation heuristic)
+
+**Rule**: consolidated context ≠ replacement for `knowledge-graph.xml`. GRACE's knowledge graph is the architectural map (static between changes). Cognee's graph is the session's operational memory (periodically consolidated). Both are needed.
+
+See `references/context-consolidation.md` for integration details.
 
 ## How the Elements Connect
 
