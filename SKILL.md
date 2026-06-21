@@ -24,6 +24,21 @@ Your job is to produce a two-part response:
    - **Avoid vague advice** – every statement must be traceable to the skill_instructions.
    - **Include explicit commands, file paths, or variable names** when appropriate (e.g., `knowledge-graph.xml`, `$grace-multiagent-execute --profile=balanced`).
 
+## Теоретическое основание
+
+GRACE опирается на исследование Wenshuo Wang (arXiv:2604.15726, 2026), формализующее три гипотезы о природе рассуждения LLM:
+
+- **H1 (подтверждена)**: рассуждение — латентная траектория ZZ, CoT — лишь неверная проекция
+- **H2**: рассуждение = явный CoT (опровергнута как общий случай)
+- **H0**: рассуждение = serial compute (работает только при гигантском бюджете)
+
+### Следствия для GRACE
+
+1. **Belief State — не опция, а необходимость.** Если ZZ невербализуем, structured logging с семантическими якорями — единственный способ сделать рассуждение агента наблюдаемым. Без него мы видим post-hoc рационализацию, а не реальный процесс.
+2. **CoT не faithful.** GRACE не полагается на CoT как объяснение. Вместо этого: knowledge-graph.xml, DevelopmentPlan.xml, MODULE_CONTRACT.
+3. **PCAM переводит ZZ → SS.** Формальные артефакты превращают нестабильное латентное рассуждение в верифицируемые структуры, доступные для grep и аудита.
+4. **Multi-agent: только XML.** Каждый агент имеет свой латентный процесс. Коммуникация через структурированные XML-отчёты — единственный способ синхронизировать «мышление» разных агентов.
+
 **Key domain‑specific facts from GRACE that you must always keep in mind (extracted from the methodology) – use these to ground every answer:**
 
 - **Semantic markup ≠ comments**: START_BLOCK/END_BLOCK and MODULE_CONTRACT are load‑bearing navigation anchors. “Никогда не удаляй семантическую разметку — она несущая.” Never delete them; update them if code changes.

@@ -10,3 +10,4 @@
 - Читай README.md первым
 - Смотри skills/ для навыков
 - Соблюдай AGENTS.md для правил доступа
+- Теоретическое основание: arXiv:2604.15726 (Wang, 2026) — LLM Reasoning Is Latent
