@@ -26,7 +26,10 @@ Your job is to produce a two-part response:
 
 ## Теоретическое основание
 
-GRACE опирается на исследование Wenshuo Wang (arXiv:2604.15726, 2026), формализующее три гипотезы о природе рассуждения LLM:
+GRACE опирается на исследования:
+
+- **Wang (2026)** — arXiv:2604.15726: LLM Reasoning Is Latent, Not the Chain of Thought. Формализует три гипотезы о природе рассуждения LLM (H1/H2/H0). H1 (латентные траектории) — рабочая гипотеза по умолчанию.
+- **Berdoz et al. (ETH Zurich, ICML 2026)** — arXiv:2606.03883: Reasoning Structure of Large Language Models. Извлекает граф утверждений из CoT, вводит метрику η (reasoning flow efficiency). Длина CoT ≠ качество, структура важнее объёма.
 
 - **H1 (подтверждена)**: рассуждение — латентная траектория ZZ, CoT — лишь неверная проекция
 - **H2**: рассуждение = явный CoT (опровергнута как общий случай)
