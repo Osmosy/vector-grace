@@ -193,3 +193,79 @@ GRACE не оценивает качество по объёму кода или
 
 - Berdoz, F., Lanzendörfer, L. A., Farestam, F., & Wattenhofer, R. (2026). Reasoning Structure of Large Language Models. ICML 2026. arXiv:2606.03883.
 - Код: https://github.com/ETH-DISCO/llm-reasoning-efficiency
+
+---
+
+# GLM-5: от Vibe Coding к Agentic Engineering (Zhipu AI + Tsinghua, 2026)
+
+**Источник:** GLM-5 Team, "GLM-5: from Vibe Coding to Agentic Engineering"
+**arXiv:** https://arxiv.org/abs/2602.15763
+**Дата:** 24 Feb 2026
+**Код:** https://github.com/zai-org/GLM-5
+
+## Ключевая идея
+
+GLM-5 — первая open-weight модель, спроектированная под **автономные агентские циклы**, а не под интерактивный чат. Модель обучается на длинных траекториях tool-вызовов (часы автономной работы) через новый алгоритм Asynchronous Agent RL.
+
+**Парадигма:** Vibe Coding (интерактивный режим) → Agentic Engineering (автономные циклы).
+
+## Ключевые инновации
+
+### 1. Asynchronous Agent RL
+Новый алгоритм RL, который decouples генерацию от тренировки, позволяя модели учиться на complex, long-horizon interactions. Модель тренируется на циклах: код → тест → код → тест → done, а не на отдельных ответах.
+
+### 2. DSA (Dual-Stage Attention)
+Архитектурная оптимизация для long-context fidelity. Позволяет модели работать часами без потери контекста.
+
+### 3. Preserved Thinking между tool calls
+Модель сохраняет «мышление» (reasoning state) между вызовами инструментов, не сбрасывая контекст после каждого tool result. Это ключевое отличие от обычных агентов, где каждый tool call — отдельный turn.
+
+### 4. ARC (Agentic, Reasoning, Coding)
+Объединение трёх способностей в одной MoE-архитектуре. Не отдельные модели для чата, кода и агента, а одна модель, которая умеет всё.
+
+## Результаты
+
+- **#1 open model** в LMArena Text и LMArena Code
+- **SWE-bench Verified: 67.8%** (наравне с Claude Opus 4.5 и GPT-5.2)
+- **Intelligence Index v4.0: 50** — первый open-weight model с таким score
+- **~20% improvement** над GLM-4.7
+
+## Связь с GRACE
+
+### 1. Подтверждение направления
+
+GRACE изначально спроектирован под автономные циклы: `$grace-execute` → `$grace-verification` → `$grace-fix` → loop. Статья подтверждает, что индустрия движется туда же.
+
+**Цитата из статьи:** «Coding agents can now write code autonomously for hours, and the length and breadth of tasks AI models are able to complete are...»
+
+### 2. Asynchronous Agent RL = тренировочный аналог GRACE
+
+| | GLM-5 (training) | GRACE (inference) |
+|---|---|---|
+| Цикл | RL на tool-траекториях | $grace-execute → verify → fix |
+| Верификация | Reward model | $grace-verification |
+| Контекст | Preserved thinking | Structured logging + semantic anchors |
+| Масштаб | Часы автономной работы | Многошаговые планы |
+
+То, что GLM-5 делает на этапе обучения, GRACE делает на этапе инференса — один и тот же паттерн на разных уровнях стека.
+
+### 3. Preserved Thinking = Belief State
+
+GLM-5 сохраняет reasoning state между tool calls. В GRACE это structured logging с семантическими якорями — единственный способ сделать это мышление наблюдаемым и верифицируемым.
+
+### 4. Vibe Coding → Agentic Engineering
+
+Та же эволюция, что GRACE описывает: от ad-hoc промптинга к структурированной, контрактно-ориентированной разработке. GRACE — это Agentic Engineering в действии.
+
+### 5. Интерактивный режим — только для спецификаций
+
+Статья подтверждает тезис: интерактивная работа с агентом — для разработки спецификаций и контроля качества. Производственный цикл (код, тесты, документация) — 100% автоматический.
+
+## Вывод
+
+GLM-5 — техническое подтверждение того, что GRACE выбрал правильное направление. Автономные циклы с верификацией — это не нишевый подход, а то, как индустрия будет работать.
+
+## Ссылки
+
+- GLM-5 Team (2026). GLM-5: from Vibe Coding to Agentic Engineering. arXiv:2602.15763.
+- Код: https://github.com/zai-org/GLM-5
