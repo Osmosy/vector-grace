@@ -34,6 +34,7 @@ GRACE опирается на исследования:
 - **Google Research + Google Cloud (2026)** — Agentic RAG: итеративный цикл с Sufficient Context Agent. Root → Planner → Query Rewriter → RAG Agent → Sufficient Context Agent → (loop) → Synthesis. +34% над vanilla RAG. Sufficient Context Agent = $grace-verification в домене RAG.
 - **Anthropic Skill Creator (2026)** — Мета-навык для создания и A/B тестирования навыков. Параллельный запуск with-skill vs baseline, количественные метрики (41% → 94%). Тот же GRACE-цикл: интервью → draft → тесты → верификация → итерация.
 - **Scale AI RaR (2025)** — arXiv:2507.17746: Rubrics as Rewards. RLVR для неверифицируемых доменов через рубрики. +31% HealthBench, +7% GPQA-Diamond. Научное подтверждение PCAM: декомпозиция контекста на блоки ≤2000 токенов с локальной RL-оценкой.
+- **DeepSeek V4 mHC (2026)** — Manifold-Constrained Hyper-Connections. Изоляция сигналов в отдельные каналы, устранение «зомби-режима» (игнорирование оператора на длинных траекториях). Модель слышит оператора даже в середине tool-траектории. Ключевое преимущество для debug и тестов.
 
 - **H1 (подтверждена)**: рассуждение — латентная траектория ZZ, CoT — лишь неверная проекция
 - **H2**: рассуждение = явный CoT (опровергнута как общий случай)
