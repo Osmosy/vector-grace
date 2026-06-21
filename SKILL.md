@@ -31,6 +31,7 @@ GRACE опирается на исследования:
 - **Wang (2026)** — arXiv:2604.15726: LLM Reasoning Is Latent, Not the Chain of Thought. Формализует три гипотезы о природе рассуждения LLM (H1/H2/H0). H1 (латентные траектории) — рабочая гипотеза по умолчанию.
 - **Berdoz et al. (ETH Zurich, ICML 2026)** — arXiv:2606.03883: Reasoning Structure of Large Language Models. Извлекает граф утверждений из CoT, вводит метрику η (reasoning flow efficiency). Длина CoT ≠ качество, структура важнее объёма.
 - **GLM-5 Team (Zhipu AI + Tsinghua, 2026)** — arXiv:2602.15763: GLM-5: from Vibe Coding to Agentic Engineering. Первая open-weight модель под автономные агентские циклы. Asynchronous Agent RL, Preserved Thinking, DSA. Подтверждает направление GRACE: автономные циклы с верификацией — стандарт индустрии.
+- **Google Research + Google Cloud (2026)** — Agentic RAG: итеративный цикл с Sufficient Context Agent. Root → Planner → Query Rewriter → RAG Agent → Sufficient Context Agent → (loop) → Synthesis. +34% над vanilla RAG. Sufficient Context Agent = $grace-verification в домене RAG.
 
 - **H1 (подтверждена)**: рассуждение — латентная траектория ZZ, CoT — лишь неверная проекция
 - **H2**: рассуждение = явный CoT (опровергнута как общий случай)
