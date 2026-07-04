@@ -1,6 +1,5 @@
 # GRACE — Graph-RAG Anchored Code Engineering: Полное руководство
 
-> Источник: https://github.com/osovv/grace-marketplace (v3.10.0)
 > Автор: Vladimir Ivanov (@turboplanner)
 > Лицензия: MIT
 
