@@ -18,6 +18,7 @@
 | `references/latent-reasoning-foundation.md` | Wang (2026): LLM Reasoning Is Latent + Berdoz et al. (ICML 2026): Reasoning Structure — теоретическое основание GRACE |
 | `references/hidden-training-formats.md` | Скрытые форматы обучения LLM |
 | `references/html-docs-for-ai-agents.md` | HTML-документация для AI-агентов — почему HTML побеждает Markdown (эссе Владимира Иванова) |
+| `references/fastcontext-slm-explorer.md` | FastContext от Microsoft — SLM для поиска в кодовых базах, отделение exploration от solving (эссе Владимира Иванова) |
 | `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
 
 ## Ключевые принципы
