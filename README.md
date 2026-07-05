@@ -16,6 +16,9 @@
 | `references/perplexity-metric.md` | Self-Aligned Perplexity как научная метрика |
 | `references/grep-all-you-need.md` | PwC: grep > векторный поиск на всех LLM |
 | `references/latent-reasoning-foundation.md` | Wang (2026): LLM Reasoning Is Latent + Berdoz et al. (ICML 2026): Reasoning Structure — теоретическое основание GRACE |
+| `references/hidden-training-formats.md` | Скрытые форматы обучения LLM |
+| `references/html-docs-for-ai-agents.md` | HTML-документация для AI-агентов — почему HTML побеждает Markdown (эссе Владимира Иванова) |
+| `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
 
 ## Ключевые принципы
 
