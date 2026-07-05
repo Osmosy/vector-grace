@@ -19,6 +19,7 @@
 | `references/hidden-training-formats.md` | Скрытые форматы обучения LLM |
 | `references/html-docs-for-ai-agents.md` | HTML-документация для AI-агентов — почему HTML побеждает Markdown (эссе Владимира Иванова) |
 | `references/fastcontext-slm-explorer.md` | FastContext от Microsoft — SLM для поиска в кодовых базах, отделение exploration от solving (эссе Владимира Иванова) |
+| `references/prompt-engineering-gpt55-outcome-first.md` | Промпт-инжиниринг для GPT-5.5 — outcome-first подход, personality, retrieval budget, валидация (разбор Пименова) |
 | `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
 
 ## Ключевые принципы
