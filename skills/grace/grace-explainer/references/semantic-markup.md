@@ -123,3 +123,32 @@ expect(hasLogMarker("info", "[ChatDomain][createChat][BLOCK_INSERT_CHAT]")).toBe
    - `SUMMARY` => summarize grouped surfaces without enumerating every symbol
    - `NONE` => omit `MODULE_MAP` when the file role truly does not need one
 6. Shared XML artifacts should never mirror the whole file header mechanically. Only public module-facing contract and interface details belong there.
+
+## Enforcement (обязательность)
+
+Семантическая разметка — не стилистическое предпочтение, а обязательное требование. Без неё проект не является GRACE-проектом.
+
+### Экономическое обоснование
+
+Средняя LLM (DeepSeek v4 Flash, GLM-5) с семантической разметкой работает не хуже крупной (Claude Sonnet, GPT-4) без неё. Разметка снижает неоднозначность → меньше reasoning → слабее модель достаточна → дешевле исполнение.
+
+"Flash + semantics = Claude − reasoning overhead." Для 80% задач (чтение, правка, поиск, генерация по паттерну) — достаточно. Оставшиеся 20% (архитектура, сложный дебаг) — делегируй крупной модели точечно.
+
+### Чек-лист (controller проверяет перед принятием модуля)
+
+- [ ] MODULE_CONTRACT с PURPOSE, SCOPE, DEPENDS, INPUTS, OUTPUTS
+- [ ] MODULE_MAP с описанием символов
+- [ ] Каждый нетривиальный блок обёрнут в START_BLOCK_X / END_BLOCK_X
+- [ ] Имена блоков уникальны в файле, описывают ЧТО не КАК
+- [ ] Логи содержат `[Module][function][BLOCK_NAME]` маркеры
+- [ ] Knowledge graph обновлён
+- [ ] Verification plan обновлён
+- [ ] Для Python: Doxygen XML сгенерирован
+- [ ] Для DeepSeek/GLM: GREP-хинты прошиты
+
+### RED lines
+
+- Файл без MODULE_CONTRACT — не готов
+- Функция без CONTRACT — не готова
+- Логи без BLOCK_NAME — не готовы
+- Удаление разметки без замены — запрещено

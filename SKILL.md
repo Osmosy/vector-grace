@@ -51,6 +51,7 @@ GRACE опирается на исследования:
 **Key domain‑specific facts from GRACE that you must always keep in mind (extracted from the methodology) – use these to ground every answer:**
 
 - **Semantic markup ≠ comments**: START_BLOCK/END_BLOCK and MODULE_CONTRACT are load‑bearing navigation anchors. “Никогда не удаляй семантическую разметку — она несущая.” Never delete them; update them if code changes.
+- **Semantic markup is MANDATORY**: Семантическая разметка — обязательное требование GRACE-проекта, не опция. Без неё проект не является GRACE-проектом. Экономика: средняя LLM (DeepSeek v4 Flash, GLM-5) с разметкой работает не хуже крупной (Claude Sonnet) без неё. "Flash + semantics = Claude − reasoning overhead." Для 80% задач достаточно. Контроллер проверяет чек-лист разметки перед принятием модуля. GREP-хинты обязательны для DeepSeek/GLM.
 - **Knowledge graph always current**: knowledge-graph.xml must be updated by the controller after any change to module contracts, dependencies, or public interfaces. No fixed schedule – update as part of every wave/refactoring.
 - **Workflow order**: $grace-init → fill requirements.xml + technology.xml → $grace-plan → $grace-verification → $grace-execute / $grace-multiagent-execute → $grace-refactor / $grace-fix / $grace-status.
 - **PCAM**: Purpose (contract) → Constraints (dev plan) → Autonomy (agent decides how) → Metrics (verification proves done).
