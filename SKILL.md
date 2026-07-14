@@ -68,6 +68,7 @@ GRACE опирается на исследования:
 - **DeepSeek-анализ**: [Математическое изложение GRACE](references/deepseek-math-analysis.md) — как DeepSeek v4 объяснил GRACE студенту-математику без доступа к полной методологии. AAG-нотация, Dual-Purpose Principle, Belief State, 4 направления развития.
 - **«Is Grep All You Need?» (PwC, 2026)**: grep > векторный поиск на любом агенте и LLM. [Разбор статьи](references/grep-all-you-need.md) — почему GRACE-разметка (уникальные XML-теги) изначально спроектирована под grep-навигацию, а не векторный RAG.
 - **[Репозитории автора GRACE](references/turboplanner-repos.md)** — TurboPlanner (GitHub), рабочий журнал ai_tests, паттерн Task→Agent→Report+Code.
+- **[Неубиваемый пайплайн Claude→DeepSeek](references/claude-prototype-pipeline.md)** — Claude как прототипист (не архитектор): прототип кода с семантикой = few-shot для слабой LLM. 2/3 токенов в дешёвую модель, 2x скорость. Проверен на сотнях проектов.
 - **[Что ИИ хранит в векторах](references/llm-vector-storage.md)** — что доступно через измерения вектора, что нет, sparse attention, подготовка контекста под сжатие.
 - **[OpenPencil](references/openpencil.md)** — AI-native design tool (3509★), замена Figma с MCP, дизайн→код.
 - **Пропорциональная гранулярность**: детализация разметки пропорциональна критичности компонента, примерно на размер sliding window ~500 токенов. Не использовать избыточно.
