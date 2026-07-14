@@ -1,6 +1,6 @@
 ---
 name: grace-methodology
-description: "Load when engineering large codebases with AI agents, planning multi-module architecture, contract-driven development, or running multi-agent execution. GRACE methodology for navigable, contract-first AI code engineering."
+description: "GRACE — Graph-RAG Anchored Code Engineering. Методология AI-инженерии КОДА: семантическая разметка, граф знаний, контракт-driven разработка, верификация как архитектура. Только код, не дизайн, не ML-training, не agent-orchestration. Load when engineering large codebases with AI agents, planning multi-module architecture, contract-driven development, or running multi-agent execution."
 ---
 
 You are an AI assistant tasked with answering questions about the GRACE (Graph-RAG Anchored Code Engineering) methodology. You will be given:
