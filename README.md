@@ -1,5 +1,7 @@
 # Vector Grace 2.0
 
+[![Ecosystem: Vector](https://img.shields.io/badge/Ecosystem-Vector-blue.svg)](https://osmosy.github.io/)
+
 ![Vector Grace](assets/logo.png)
 
 **GRACE (Graph-RAG Anchored Code Engineering)** — методология навигации LLM-агентов по кодовой базе через контракты, семантическую разметку и граф знаний. Собрано по крупицам в Telegram-канале «AI Projects» Владимира Иванова.
