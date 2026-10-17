@@ -23,6 +23,7 @@
 | `references/fastcontext-slm-explorer.md` | FastContext от Microsoft — SLM для поиска в кодовых базах, отделение exploration от solving (эссе Владимира Иванова) |
 | `references/prompt-engineering-gpt55-outcome-first.md` | Промпт-инжиниринг для GPT-5.5 — outcome-first подход, personality, retrieval budget, валидация (разбор Пименова) |
 | `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
+| `references/indra-ocr-cpu.md` | Indra OCR (1M параметров, ONNX, без GPU): проверено на нашем слайде 154 — 404 мс/страница и все 18 чисел, но четыре с дефектом формата; где годится, а где нет, и лицензионное ограничение весов |
 
 ### Тестирование, надёжность и диагностика агентов
 
