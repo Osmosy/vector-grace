@@ -90,6 +90,17 @@ Budget by consequence class: the full contour (traceability + independent eviden
 - every workaround an agent used to continue testing is reported as an open defect in a dedicated field and **blocks acceptance** until resolved — otherwise the advantage "hit a bug, worked around it, kept testing" masks defects;
 - agentic acceptance needs an independent critic, or it degenerates into self-assessment — exactly the signal models learn to fake (overwritten tests, read expected outputs, `exit(0)`).
 
+## The reviewer is a system too
+
+A reviewer that is never measured drifts like any other agent. Treat it as a component with its own regressions, its own metrics and its own failure modes.
+
+1. **Every incident asks "which layer should have caught this?"** The answer assigns work: if a criteria check should have caught it, the criteria were too weak; if a human reviewer was supposed to catch it, the finding was not surfaced loudly enough; if nothing could catch it, a new criterion (and its journal field) is missing.
+2. **Incidents and rollbacks become regressions of the reviewer, not only of the code.** Each one turns into a standing case the reviewer must flag — run as part of the reviewer's daily checks. A reviewer that keeps missing a class of defect is a broken check, not a bad day.
+3. **Measure the reviewer separately from the product.** Track its false-positive share and the number of review rounds (median and 95th percentile) apart from pass rate and reverts. Without this, a noisy reviewer gets switched off wholesale, or kept forever because nobody can see what it costs.
+4. **Review loop discipline (prevents agent ping-pong).** After three rounds the reviewer must ask the author to reconsider the approach instead of re-raising the same points. Once the first passes are done, review only the **new** diff. Never repeat an already-posted finding. Flag the **class** of defect so the author fixes every instance, not one line. One observed agent CLI PR spent 50+ rounds overnight, and the majority of repeats came from the first pass rather than from new bugs.
+5. **Approval is bound to a commit, and merge re-checks against the current main.** Anything that changed after approval — including a rebase onto a newer main — needs re-approval. A verification that was green on an older main is not verification.
+6. **Keep the reviewer's own instructions out of reach of the change.** Guidance files (`REVIEW.md`-style, criteria files, AGENTS.md) are read from the base/default branch and never from the pull request's own diff; otherwise a change can rewrite the rules it is judged by.
+
 ## Common Pitfalls
 
 - **Reconciliation that normalizes "correctly"** → recompute with the pipeline's own predicate; otherwise the loss is understated (observed in a runnable demo: 7 of 8 matched and 500 lost instead of 6 of 8 and 525 lost).
@@ -101,6 +112,10 @@ Budget by consequence class: the full contour (traceability + independent eviden
 - **Fixing a criterion by writing another test** → if a field is missing from the journal, fix the logging.
 - **Logging everything instead of staged counters** → context has a price; log counters, sums, dividers and an offenders sample.
 - **Acceptance measured by pass rate** → measure the share of specification points that have valid evidence, plus a diagnostic report without open workarounds.
+- **Incidents fixed in the code but not in the reviewer** → each incident becomes a standing case of the reviewer; otherwise the same class of defect returns.
+- **Reviewer metrics not tracked** → track false positives and rounds separately, or a noisy reviewer is either switched off wholesale or kept forever.
+- **Approval surviving new commits or a rebase onto a newer main** → bind approval to the commit hash and re-run the criteria at merge.
+- **Review instructions read from the changed branch** → take `REVIEW.md`-style guidance and criteria from the base branch only; a change must not rewrite its own judging rules.
 
 ## Runnable example
 
@@ -111,4 +126,5 @@ Budget by consequence class: the full contour (traceability + independent eviden
 - `references/diagnostics-over-tests-dirty-data.md` — phantom records, dropped JOINs, LDD and the criteria experiment;
 - `references/grace-tests-as-logs-and-evidence.md` — tests as journal fillers and evidence per spec point;
 - `references/agentic-e2e-vs-scripted-tests.md` — what to do with scripted E2E scenarios, and the algorithmic/agentic split;
-- `references/unit-test-only-reward-degradation.md` — why "tests as the goal" degrades quality even when pass rate holds.
+- `references/unit-test-only-reward-degradation.md` — why "tests as the goal" degrades quality even when pass rate holds;
+- `references/anthropic-code-review-pipeline.md` — the review pipeline this section borrows from (Find → Verify → Rank → Post, risk tiers, merge queue, incident-to-regression), with what is documented and what is only reported.
