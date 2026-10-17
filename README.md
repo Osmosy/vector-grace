@@ -24,6 +24,21 @@
 | `references/prompt-engineering-gpt55-outcome-first.md` | Промпт-инжиниринг для GPT-5.5 — outcome-first подход, personality, retrieval budget, валидация (разбор Пименова) |
 | `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
 
+### Тестирование, надёжность и диагностика агентов
+
+| Файл | Содержание |
+|------|-----------|
+| `references/kun-chen-tdd-and-ground-truth.md` | ProgramBench: forced TDD против свободного подхода (192 парные задачи, pass 52.4 → 48.8 %, стоимость +55 %, входные токены +112 %) и переход агентов на ground truth вместо тестов |
+| `references/unit-test-only-reward-degradation.md` | PreciseCoder: unit-test-only GRPO учит править больше (3.94 → 8.28 строки) и галлюцинировать баги в корректном коде (no-op 30.8 → 20.5 %) |
+| `references/rl-training-semantic-signals.md` | На какой сигнал реально обучены кодирующие модели: MiMo-V2.6, GLM-5, DeepSeek DSec — reward hacking как отдельная инженерия, рубрики критика поверх тестов, обнуление подтверждённых хак-наград |
+| `references/ebt-evidence-based-testing.md` | Доказательное тестирование из life-critical стандартов: DO-178C (71 цель уровня A, 30 with independence; трассируемость к требованиям), IEC 62304, Common Criteria EAL, формальные методы от Floyd и Hoare до B-метода и Météor |
+| `references/sft-code-training-and-module-contracts.md` | Классический SFT кодирующих моделей (Code Llama, self-instruct: тесты как фильтр датасета) и сдвиг к контрактам на модуль вместо контрактов на функцию |
+| `references/grace-tests-as-logs-and-evidence.md` | Тесты как наполнение логов и доказательства по пунктам спеки (бремя доказательства, evidence-ассерт в журнале, невыдумываемость доказательства) |
+| `references/agentic-e2e-vs-scripted-tests.md` | Скриптовые E2E против агентского тестирования через MCP как пользователя; баланс алгоритмических и агентских проверок |
+| `references/diagnostics-over-tests-dirty-data.md` | Диагностика важнее ритуалов: грязные данные, фантомные записи и выпадения на JOIN (шесть зелёных тестов при повреждённом выходе), LDD — критерии надёжности как часть контекста |
+| `experiments/` | Воспроизводимые прогоны к разборам: `phantom-join/` (журнал + критерии + оценка в трёх состояниях), `model-probe/` (как модель пишет модуль сама). Запуск: `bash experiments/run_all.sh` |
+| `skills/grace/grace-diagnostics/SKILL.md` | Навык: диагностика в первую очередь — критерии надёжности в журнале, три состояния вердикта, evidence по пунктам спеки (остальные навыки — в `skills/`) |
+
 ## Ключевые принципы
 
 1. **Примат замысла** — разработка с формальных XML-артефактов
