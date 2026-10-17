@@ -1,0 +1,6 @@
+# артефакты прогонов: воспроизводятся заново
+phantom-join/orders.csv
+phantom-join/customers.csv
+phantom-join/report.csv
+phantom-join/run.jsonl
+__pycache__/

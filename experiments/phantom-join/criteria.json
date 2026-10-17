@@ -1,0 +1,34 @@
+{
+  "criteria": [
+    {
+      "id": "crit.completeness.join",
+      "stage": "join",
+      "rule": "rows_out >= rows_in - len(orphan_keys)",
+      "why": "выпадение на JOIN: любая запись, у которой ключ есть в справочнике, обязана дойти до выхода"
+    },
+    {
+      "id": "crit.fanout.dim",
+      "stage": "source.dim",
+      "rule": "len(dim_duplicate_keys) == 0",
+      "why": "дубль в справочнике размножает агрегат (fan-out), отчёт завышается ровно во столько раз, во сколько дублирован ключ"
+    },
+    {
+      "id": "crit.sum.invariance",
+      "stage": "agg",
+      "rule": "abs(sum_out - (sum_in - orphan_amount)) <= tol",
+      "why": "сумма обязана сохраняться с точностью до суммы потерянных сирот"
+    },
+    {
+      "id": "crit.key.hygiene",
+      "stage": "join",
+      "rule": "len(key_hygiene_suspects) == 0",
+      "why": "пробелы и регистр в ключах дают тихие выпадения, невидимые по счётчикам"
+    },
+    {
+      "id": "crit.evidence.sample",
+      "stage": "agg",
+      "rule": "offenders_present == True",
+      "why": "без среза проблемных записей агент не построит гипотезу и не сделает фикс"
+    }
+  ]
+}
