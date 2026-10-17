@@ -24,6 +24,7 @@
 | `references/prompt-engineering-gpt55-outcome-first.md` | Промпт-инжиниринг для GPT-5.5 — outcome-first подход, personality, retrieval budget, валидация (разбор Пименова) |
 | `references/comfyui-dit-artifact-cleanup.md` | ComfyUI DiT artifact cleanup |
 | `references/indra-ocr-cpu.md` | Indra OCR (1M параметров, ONNX, без GPU): проверено на нашем слайде 154 — 404 мс/страница и все 18 чисел, но четыре с дефектом формата; где годится, а где нет, и лицензионное ограничение весов |
+| `references/graphiti-temporal-memory.md` | Graphiti как темпоральная память агента: разбор мастер-класса с проверкой по коду — облачные клиенты и телеметрия по умолчанию, поиск без временного фильтра, 13 инструментов MCP, грабли установки (нет версии 0.31.0 на PyPI, httpx, Python ≥3.12 для FalkorDB Lite) |
 
 ### Тестирование, надёжность и диагностика агентов
 
