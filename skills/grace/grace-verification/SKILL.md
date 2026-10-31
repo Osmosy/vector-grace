@@ -170,6 +170,8 @@ Three gates, all mechanical:
 
 Statuses are first-class: `elicited` | `assumed` | `open` | `rejected` | `superseded`. `open` covers both unresolved questions and fragments the agent did not understand — it carries an owner and a deadline, and it is never paraphrased away into a confident requirement. The count of `open` records at baseline is the risk metric, not an embarrassment.
 
+The mechanics are implemented, not left to prose: `python3 registry/grace.py --root <project> parse|coverage|drift|replay` (stdlib only, no install). Exit codes: `0` clean, `1` blocking findings, `2` bad input, `3` refuse to run — a predicate whose sha256 differs from the recorded version, or an invariant with no transitions. An `open` verdict without a verbatim quote from the span is rejected at write time. If the tool is available, run it instead of judging the registry by reading it: "I looked and it seems covered" is exactly the claim this gate exists to replace.
+
 Every evidence record names its checker and checker version, and states the observation that would falsify it. If no such observation can be named, the record is decoration.
 
 The machine-readable spec is a **cache**: regenerable from `raw_text` plus derivation rules, never a second source of truth. Discarding it is fine; losing the ability to regenerate it is not.
