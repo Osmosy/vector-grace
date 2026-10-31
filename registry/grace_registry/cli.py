@@ -221,6 +221,10 @@ def cmd_revise(args, lay: Layout) -> int:
     new["at"] = _now()
     if args.status:
         new["status"] = args.status
+        # возврат из superseded обязан снять указатель: иначе ревизия остаётся с
+        # superseded_by при живом статусе, и model.problems() её отвергает
+        if args.status != "superseded" and not args.superseded_by:
+            new["superseded_by"] = None
     if args.owner is not None:
         new["owner"] = args.owner
     if args.deadline is not None:

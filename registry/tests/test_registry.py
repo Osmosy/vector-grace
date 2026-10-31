@@ -518,6 +518,21 @@ class TestCliEndToEnd(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("orphaned_evidence", out)
 
+    def test_return_from_superseded_clears_pointer(self):
+        """Возврат из superseded обязан снять superseded_by: иначе ревизия невалидна."""
+        run_cli(self.root, "parse")
+        span_ids = [s["span_id"] for s in model.load_jsonl(self.root / "docs/registry/spans.jsonl")]
+        run_cli(self.root, "add-req", "--span-id", span_ids[1], "--strength", "must", "--by", BY)
+        code, out = run_cli(self.root, "revise", "--req", "REQ-0001",
+                            "--superseded-by", "REQ-0002", "--by", BY)
+        self.assertEqual(code, 0, out)
+        code, out = run_cli(self.root, "revise", "--req", "REQ-0001",
+                            "--status", "elicited", "--by", BY)
+        self.assertEqual(code, 0, out)
+        live = model.live_requirements(model.load_jsonl(self.root / "docs/requirements-registry.jsonl"))
+        self.assertEqual(live["REQ-0001"]["status"], "elicited")
+        self.assertIsNone(live["REQ-0001"]["superseded_by"])
+
     def test_measure_recorded_and_evidence_carries_it(self):
         run_cli(self.root, "parse")
         span_ids = [
