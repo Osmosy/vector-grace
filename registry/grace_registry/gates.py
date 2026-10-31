@@ -56,12 +56,19 @@ def has_block(findings: list[Finding]) -> bool:
 # ---------------------------------------------------------------- покрытие
 
 
-def coverage_gate(span_records: list[dict], verdicts: list[dict]) -> list[Finding]:
+def coverage_gate(
+    span_records: list[dict], verdicts: list[dict], known: list[dict] | None = None
+) -> list[Finding]:
     """Каждый спан каждого источника имеет вердикт; модальный спан не в фоне.
 
     Вердикт покрывает спан только при совпадении span_id и sha256 спана.
     Если текст изменился, вердикт перестаёт покрывать — это и есть повторная
     экстракция, а не потеря работы.
+
+    `known` — все известные спаны проекта. Он шире `span_records`: требование может
+    опираться на строку таблицы из корпуса доказательств (колоды), и тогда вердикт по
+    такой строке законен, хотя сама строка не входит в корпус требований. Без этого
+    разделения каждый такой вердикт выглядит как устаревший.
     """
     findings: list[Finding] = []
     latest: dict[str, dict] = {}
@@ -70,6 +77,9 @@ def coverage_gate(span_records: list[dict], verdicts: list[dict]) -> list[Findin
         if isinstance(sid, str):
             latest[sid] = verdict  # append-only: последняя запись выигрывает
 
+    existing = {
+        str(span.get("span_id") or "") for span in (known if known is not None else span_records)
+    }
     current: set[str] = set()
     for span in span_records:
         sid = str(span.get("span_id") or "")
@@ -103,7 +113,7 @@ def coverage_gate(span_records: list[dict], verdicts: list[dict]) -> list[Findin
                         {**where, "kind": kind, "modal": modal},
                     )
                 )
-    for sid in sorted(set(latest) - current):
+    for sid in sorted(set(latest) - existing):
         findings.append(
             Finding(
                 "stale_verdict",

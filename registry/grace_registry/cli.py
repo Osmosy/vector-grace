@@ -456,7 +456,7 @@ def cmd_coverage(args, lay: Layout) -> int:
         s for s in spans if roles.get(str(s.get("file")), "requirements") == "requirements"
     ]
     evidence_spans = len(spans) - len(required)
-    findings = freshness + gates.coverage_gate(required, model.load_jsonl(lay.verdicts))
+    findings = freshness + gates.coverage_gate(required, model.load_jsonl(lay.verdicts), known=spans)
     if not args.json:
         print(
             f"корпус требований: {len(required)} спанов, корпус доказательств: "
@@ -559,7 +559,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("parse", help="источники → спаны").add_argument(
-        "--split", default="paragraph", choices=("paragraph", "pages"),
+        "--split", default="paragraph", choices=("paragraph", "pages", "rows"),
         help="абзацы (по умолчанию) или страницы колоды по заголовкам «## Слайд N»",
     )
 

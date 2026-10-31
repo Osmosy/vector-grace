@@ -98,6 +98,7 @@ def obligations(text: str) -> list[str]:
 
 
 _PAGE_HEADING = re.compile(r"(?m)^##[ \t]+(?:Слайд|Slide|Страница|Page)[ \t]+(\d+)[^\n]*$")
+_TABLE_ROW = re.compile(r"(?m)^\|[^\n]*\|[ \t]*$")
 
 
 def page_spans(data: bytes) -> list[tuple[int, Span]]:
@@ -114,11 +115,38 @@ def page_spans(data: bytes) -> list[tuple[int, Span]]:
     return out
 
 
+def row_spans(data: bytes) -> list[tuple[int, Span]]:
+    """Спан = строка markdown-таблицы, с номером страницы, на которой она стоит.
+
+    Нужен, когда требование — конкретный факт строки, а не страница целиком: иначе
+    несколько требований с одной страницы делят один raw_text, и реестр перестаёт
+    различать, какое из них доказано. Строки-разделители шапки (`|---|---|`) пропускаются.
+    """
+    text = data.decode("utf-8")
+    pages = [(int(m.group(1)), m.start()) for m in _PAGE_HEADING.finditer(text)]
+    out: list[tuple[int, Span]] = []
+    for match in _TABLE_ROW.finditer(text):
+        chunk = match.group(0)
+        cells = chunk.strip().strip("|")
+        if not cells or set(cells.replace("|", "")) <= set("-: "):
+            continue
+        page = 0
+        for number, position in pages:
+            if position <= match.start():
+                page = number
+        start = len(text[: match.start()].encode("utf-8"))
+        end = start + len(chunk.encode("utf-8"))
+        out.append((page, Span(start, end, sha256_bytes(data[start:end]))))
+    return out
+
+
 def records(data: bytes, file: str, split: str = "paragraph") -> Iterator[dict]:
     """Записи spans.jsonl для одного источника. Это кэш, его можно пересобрать."""
     file_sha = sha256_bytes(data)
     if split == "pages":
         pairs = page_spans(data)
+    elif split == "rows":
+        pairs = row_spans(data)
     elif split == "paragraph":
         pairs = [(None, span) for span in atomize(data)]
     else:
