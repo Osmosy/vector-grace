@@ -367,6 +367,15 @@ class TestReplay(unittest.TestCase):
         self.assertFalse(results[0]["match"])
         self.assertEqual([f.code for f in findings], ["replay_mismatch"])
 
+    def test_latest_evidence_wins(self):
+        stale = make_evidence(self.rec, result="fail")
+        results, findings = replay.replay_evidence(
+            [self.rec], [stale, self.ev], {"INV-0001": self.inv}, self.root
+        )
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["expected"], "pass")
+        self.assertEqual(findings, [])
+
     def test_tampered_checker_refused(self):
         (self.root / self.predicate).write_text("print('{}')\n", encoding="utf-8")
         with self.assertRaises(replay.IntegrityError):

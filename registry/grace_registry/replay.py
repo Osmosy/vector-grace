@@ -95,6 +95,19 @@ def replay_evidence(
     results: list[dict] = []
     findings: list[gates.Finding] = []
 
+    # Журнал append-only: одну и ту же пару (req_id, inv_id, переход) могли
+    # перевыпустить (новая версия чекера, другой результат). Приёмка перезапускает
+    # актуальную запись, а не первую попавшуюся.
+    latest: dict[tuple[str, str, str], dict] = {}
+    for ev in evidence:
+        key = (
+            str(ev.get("req_id")),
+            str(ev.get("inv_id")),
+            str(ev.get("transition")),
+        )
+        latest[key] = ev
+    evidence = list(latest.values())
+
     for ev in evidence:
         rid = str(ev.get("req_id"))
         if only_req and rid != only_req:
