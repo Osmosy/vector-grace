@@ -1,0 +1,12 @@
+{
+ "clean": "src/upload.py",
+ "clean_source": "bench/clean.py",
+ "transition": "retry_on_upload",
+ "mutants": [
+  {"name": "attempts 3 → 1", "class": "подменённый коэффициент", "file": "bench/mutants/m1_attempts.py"},
+  {"name": "перепутаны возвраты успеха и исчерпания", "class": "инвертированное условие", "file": "bench/mutants/m2_returns.py"},
+  {"name": "range(attempts - 1)", "class": "пропущенная граница", "file": "bench/mutants/m3_offbyone.py"},
+  {"name": "send вне try", "class": "неверный порядок вызовов", "file": "bench/mutants/m4_order.py"},
+  {"name": "исчерпание возвращает True", "class": "потерянная ветка отказа", "file": "bench/mutants/m5_exhausted.py"}
+ ]
+}

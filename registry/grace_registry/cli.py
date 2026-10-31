@@ -24,7 +24,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import gates, model, replay, spans as spans_mod
+from . import gates, measure as measure_mod, model, replay, spans as spans_mod
 
 _CHOICES_NON_REQ = ("question", "decision", "background", "duplicate", "open")
 
@@ -39,6 +39,7 @@ class Layout:
         self.verdicts = self.registry_dir / "verdicts.jsonl"
         self.evidence = self.registry_dir / "evidence.jsonl"
         self.invariants = self.registry_dir / "invariants.jsonl"
+        self.measurements = self.registry_dir / "measurements.jsonl"
         self.requirements = self.docs / "requirements-registry.jsonl"
 
 
@@ -303,6 +304,18 @@ def cmd_evidence(args, lay: Layout) -> int:
     if not (args.defeater or "").strip():
         return _fail("без defeater запись доказательства — декорация")
     code_root = Path(args.code_root).resolve() if args.code_root else lay.root
+    measured = None
+    for item in model.load_jsonl(lay.measurements):
+        if item.get("inv_id") == args.inv and item.get("checker_sha256") == actual:
+            measured = {
+                "source": "measure",
+                "at": item.get("at"),
+                "bench": item.get("bench"),
+                "mutants": item.get("mutants"),
+                "detected": item.get("detected"),
+                "false_accept": item.get("false_accept"),
+                "false_reject": item.get("false_reject"),
+            }
     record = {
         "req_id": args.req,
         "req_hash": rec.get("req_hash"),
@@ -315,12 +328,89 @@ def cmd_evidence(args, lay: Layout) -> int:
         "result": args.result,
         "defeater": args.defeater,
         "detail": args.detail,
+        "measured": measured,
         "by": args.by,
         "at": _now(),
     }
     model.append_jsonl(lay.evidence, record)
-    print(f"доказательство: {args.req} / {args.inv} / {args.transition} → {args.result}")
+    tail = ""
+    if measured:
+        tail = f" (замер: пропуск {measured['false_accept']}, ложное отклонение {measured['false_reject']}, n={measured['mutants']})"
+    print(f"доказательство: {args.req} / {args.inv} / {args.transition} → {args.result}{tail}")
     return 0
+
+
+def cmd_measure(args, lay: Layout) -> int:
+    invariants = {
+        rec["inv_id"]: rec for rec in model.load_jsonl(lay.invariants) if "inv_id" in rec
+    }
+    inv = invariants.get(args.inv)
+    if inv is None:
+        return _fail(f"{args.inv} не найден")
+    predicate = (
+        (lay.root / args.predicate) if args.predicate else (lay.root / inv["predicate"]["path"])
+    )
+    if not predicate.is_file():
+        return _fail(f"предикат не найден: {predicate}")
+    bench_path = lay.root / (args.bench or "bench/bench.json")
+    try:
+        bench = measure_mod.load_bench(bench_path)
+    except measure_mod.BenchError as exc:
+        return _fail(str(exc))
+    transition = args.transition or bench.get("transition") or (inv.get("transitions") or [""])[0]
+    if not transition:
+        return _fail("переход не задан ни в bench, ни в инварианте")
+    report = measure_mod.measure(predicate, lay.root, bench, transition)
+    report["inv_id"] = args.inv
+    report["bench"] = bench_path.relative_to(lay.root).as_posix()
+    report["registered"] = report["checker_sha256"] == inv["predicate"]["sha256"]
+
+    if args.out:
+        out_path = lay.root / args.out
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(
+            json.dumps(report, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
+        )
+
+    if args.json:
+        print(json.dumps(report, ensure_ascii=False, indent=1))
+    else:
+        state = "зарегистрированный" if report["registered"] else "кандидат, не записан в инвариант"
+        print(f"{args.inv}: предикат {Path(report['checker']).name} ({state}), переход {transition}")
+        print(f"чистый код: {'проходит' if report['clean_ok'] else 'ОТКЛОНЁН'}")
+        for item in report["results"]:
+            mark = "поймал " if item["detected"] else "пропустил"
+            print(f"  {mark} {item['class']}: {item['name']}")
+        print(
+            f"обнаружено {report['detected']} из {report['mutants']}"
+            f" (пропуск {report['false_accept']}), ложных отклонений на чистом коде"
+            f" {report['false_reject']} при {report['clean_runs']} прогоне"
+        )
+
+    if args.predicate:
+        # Кандидата не фиксируем: в инвариант он попадает только новой версией
+        # чекера, а это уже отдельная запись с новым sha256.
+        return 0 if report["clean_ok"] else 1
+
+    model.append_jsonl(
+        lay.measurements,
+        {
+            "inv_id": args.inv,
+            "checker_sha256": report["checker_sha256"],
+            "bench": report["bench"],
+            "transition": transition,
+            "mutants": report["mutants"],
+            "detected": report["detected"],
+            "false_accept": report["false_accept"],
+            "false_reject": report["false_reject"],
+            "by_class": report["by_class"],
+            "by": args.by,
+            "at": _now(),
+        },
+    )
+    if not args.json:
+        print(f"замер записан: {lay.measurements.relative_to(lay.root)}")
+    return 0 if report["clean_ok"] else 1
 
 
 def cmd_coverage(args, lay: Layout) -> int:
@@ -468,6 +558,15 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--code-root")
     e.add_argument("--by", required=True)
 
+    m = sub.add_parser("measure", help="замер предиката на посаженных дефектах")
+    m.add_argument("--inv", required=True)
+    m.add_argument("--bench", help="набор дефектов, по умолчанию bench/bench.json")
+    m.add_argument("--predicate", help="кандидат вместо зарегистрированного предиката")
+    m.add_argument("--transition")
+    m.add_argument("--out", help="записать отчёт в файл")
+    m.add_argument("--json", action="store_true")
+    m.add_argument("--by", required=True)
+
     c = sub.add_parser("coverage", help="гейт покрытия спанов")
     c.add_argument("--json", action="store_true")
 
@@ -493,6 +592,7 @@ def main(argv: list[str] | None = None) -> int:
         "revise": cmd_revise,
         "invariant-add": cmd_invariant_add,
         "evidence": cmd_evidence,
+        "measure": cmd_measure,
         "coverage": cmd_coverage,
         "drift": cmd_drift,
         "replay": cmd_replay,

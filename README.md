@@ -46,7 +46,7 @@
 | `references/tdflow-human-vs-llm-tests.md` | TDFlow (EACL 2026): 94.3 % с человеческими тестами против 68.0 % с самотестами, но 93.3 % при BTR = 0 — авторство не важно, если тест корректен; BTR требует gold-патча и в проде недоступен |
 | `references/tddev-acceptance-oracle-closed-loop.md` | TDDev (20 веб-приложений): TDD +15.5…23.7 п.п. у Sonnet, отрицательная экономика у Qwen (−2.36 п.п./Mtoken); оракул замкнут на acceptance-критерии; в статье нет чисел «34–48 %» и «25×» из пересказа |
 | `experiments/` | Воспроизводимые прогоны к разборам: `phantom-join/` (журнал + критерии + оценка в трёх состояниях), `model-probe/` (как модель пишет модуль сама). Запуск: `bash experiments/run_all.sh` |
-| `registry/` | Гейт реестра требований в коде: спаны по байтовым смещениям, три класса дрейфа, перезапуск чекеров (`python3 registry/grace.py --root <проект> parse\|coverage\|drift\|replay`). Рабочий пример — `registry/examples/mini/`, тесты — 32 шт. |
+| `registry/` | Гейт реестра требований в коде: спаны по байтовым смещениям, три класса дрейфа, перезапуск чекеров, замер предикатов на посаженных дефектах (`python3 registry/grace.py --root <проект> parse\|coverage\|drift\|replay\|measure`). Рабочий пример — `registry/examples/mini/`, тесты — 35 шт. |
 | `skills/grace/grace-diagnostics/SKILL.md` | Навык: диагностика в первую очередь — критерии надёжности в журнале, три состояния вердикта, evidence по пунктам спеки (остальные навыки — в `skills/`) |
 
 ## Ключевые принципы

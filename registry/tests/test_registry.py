@@ -14,7 +14,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from grace_registry import cli, gates, model, replay, spans  # noqa: E402
+from grace_registry import cli, gates, measure, model, replay, spans  # noqa: E402
 
 BY = "agent:test/1"
 
@@ -353,6 +353,53 @@ class TestReplay(unittest.TestCase):
             replay.replay_evidence([self.rec], [ev], {"INV-0001": self.inv}, self.root)
 
 
+class TestMeasure(unittest.TestCase):
+    def test_counts_and_false_accept(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "src").mkdir()
+            (root / "src" / "m.py").write_text("GOOD\n", encoding="utf-8")
+            (root / "bench").mkdir()
+            (root / "bench" / "clean.py").write_text("GOOD\n", encoding="utf-8")
+            (root / "bench" / "bad.py").write_text("BAD\n", encoding="utf-8")
+            (root / "bench" / "ok.py").write_text("GOOD  # правка без дефекта\n", encoding="utf-8")
+            (root / "checkers").mkdir()
+            predicate = root / "checkers" / "check_good.py"
+            predicate.write_text(
+                "import argparse, json\n"
+                "p = argparse.ArgumentParser()\n"
+                "p.add_argument('--root'); p.add_argument('--transition')\n"
+                "a = p.parse_args()\n"
+                "from pathlib import Path\n"
+                "src = Path(a.root) / 'src' / 'm.py'\n"
+                "ok = 'GOOD' in src.read_text('utf-8')\n"
+                "print(json.dumps({'ok': ok, 'detail': 'good' if ok else 'bad'}))\n",
+                encoding="utf-8",
+            )
+            bench = {
+                "clean": "src/m.py",
+                "clean_source": "bench/clean.py",
+                "mutants": [
+                    {"name": "пропал GOOD", "class": "потерянная ветка отказа", "file": "bench/bad.py"},
+                    {"name": "правка без дефекта", "class": "подменённый коэффициент", "file": "bench/ok.py"},
+                ],
+            }
+            report = measure.measure(predicate, root, bench, "t")
+        self.assertTrue(report["clean_ok"])
+        self.assertEqual(report["false_reject"], 0.0)
+        self.assertEqual(report["mutants"], 2)
+        self.assertEqual(report["detected"], 1)
+        self.assertEqual(report["false_accept"], 0.5)
+        self.assertEqual(report["by_class"]["подменённый коэффициент"]["detected"], 0)
+
+    def test_empty_bench_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "bench.json"
+            path.write_text(json.dumps({"clean": "src/m.py", "mutants": []}), encoding="utf-8")
+            with self.assertRaises(measure.BenchError):
+                measure.load_bench(path)
+
+
 class TestCliEndToEnd(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
@@ -431,6 +478,51 @@ class TestCliEndToEnd(unittest.TestCase):
         code, out = run_cli(self.root, "drift")
         self.assertEqual(code, 1)
         self.assertIn("orphaned_evidence", out)
+
+    def test_measure_recorded_and_evidence_carries_it(self):
+        run_cli(self.root, "parse")
+        span_ids = [
+            s["span_id"]
+            for s in model.load_jsonl(self.root / "docs/registry/spans.jsonl")
+        ]
+        for sid in (span_ids[0], span_ids[2]):
+            run_cli(self.root, "verdict", "--span-id", sid, "--kind", "background", "--by", BY)
+        run_cli(self.root, "add-req", "--span-id", span_ids[1], "--by", BY)
+        predicate = write_checker(self.root)
+        run_cli(self.root, "invariant-add", "--req", "REQ-0001", "--predicate", predicate,
+                "--transitions", "retry_on_upload", "--by", BY)
+
+        (self.root / "src").mkdir()
+        (self.root / "src" / "app.py").write_text("x = 1\n", encoding="utf-8")
+        (self.root / "bench").mkdir()
+        (self.root / "bench" / "mutant.py").write_text("x = 2\n", encoding="utf-8")
+        (self.root / "bench" / "bench.json").write_text(
+            json.dumps(
+                {
+                    "clean": "src/app.py",
+                    "mutants": [
+                        {"name": "коэффициент", "class": "подменённый коэффициент",
+                         "file": "bench/mutant.py"}
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        code, out = run_cli(self.root, "measure", "--inv", "INV-0001", "--by", BY)
+        # Предикат не читает код и всегда зелёный: дефект обязан остаться незамеченным.
+        self.assertEqual(code, 0, out)
+        self.assertIn("обнаружено 0 из 1", out)
+        self.assertIn("пропуск 1.0", out)
+
+        code, out = run_cli(self.root, "evidence", "--req", "REQ-0001", "--inv", "INV-0001",
+                            "--transition", "retry_on_upload", "--result", "pass",
+                            "--defeater", "повторов нет при двух сбоях", "--by", BY)
+        self.assertEqual(code, 0, out)
+        record = model.load_jsonl(self.root / "docs/registry/evidence.jsonl")[-1]
+        self.assertIsNotNone(record["measured"])
+        self.assertEqual(record["measured"]["false_accept"], 1.0)
+        self.assertEqual(record["measured"]["mutants"], 1)
 
     def test_open_verdict_requires_verbatim_quote(self):
         run_cli(self.root, "parse")

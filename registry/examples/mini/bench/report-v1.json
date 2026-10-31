@@ -1,0 +1,69 @@
+{
+ "checker": "/home/lenovo/projects/vector-grace/registry/examples/mini/checkers/check_retry.py",
+ "checker_sha256": "77f819dca814a4497f5d9acd121d22b5b7852deb3ca4902dd07c04aab9d04270",
+ "transition": "retry_on_upload",
+ "clean_ok": true,
+ "false_reject": 0.0,
+ "clean_runs": 1,
+ "clean_detail": "retry_on_upload: повтор при сбое на месте",
+ "mutants": 5,
+ "detected": 1,
+ "false_accept": 0.8,
+ "by_class": {
+  "подменённый коэффициент": {
+   "n": 1,
+   "detected": 0
+  },
+  "инвертированное условие": {
+   "n": 1,
+   "detected": 0
+  },
+  "пропущенная граница": {
+   "n": 1,
+   "detected": 1
+  },
+  "неверный порядок вызовов": {
+   "n": 1,
+   "detected": 0
+  },
+  "потерянная ветка отказа": {
+   "n": 1,
+   "detected": 0
+  }
+ },
+ "results": [
+  {
+   "name": "attempts 3 → 1",
+   "class": "подменённый коэффициент",
+   "detected": false,
+   "detail": "retry_on_upload: повтор при сбое на месте"
+  },
+  {
+   "name": "перепутаны возвраты успеха и исчерпания",
+   "class": "инвертированное условие",
+   "detected": false,
+   "detail": "retry_on_upload: повтор при сбое на месте"
+  },
+  {
+   "name": "range(attempts - 1)",
+   "class": "пропущенная граница",
+   "detected": true,
+   "detail": "retry_on_upload: в /home/lenovo/.hermes/cache/scratch/grace-bench-cwv_gx7c/root/src/upload.py нет повтора при сбое"
+  },
+  {
+   "name": "send вне try",
+   "class": "неверный порядок вызовов",
+   "detected": false,
+   "detail": "retry_on_upload: повтор при сбое на месте"
+  },
+  {
+   "name": "исчерпание возвращает True",
+   "class": "потерянная ветка отказа",
+   "detected": false,
+   "detail": "retry_on_upload: повтор при сбое на месте"
+  }
+ ],
+ "inv_id": "INV-0001",
+ "bench": "bench/bench.json",
+ "registered": true
+}

@@ -1,0 +1,69 @@
+{
+ "checker": "/home/lenovo/projects/vector-grace/registry/examples/mini/checkers/check_retry_ast.py",
+ "checker_sha256": "d7f4d8ee94ab6179ed37eb302cd9a27e14c2c30b6f0b295bda283b6e0701d10c",
+ "transition": "retry_on_upload",
+ "clean_ok": true,
+ "false_reject": 0.0,
+ "clean_runs": 1,
+ "clean_detail": "retry_on_upload: структура повтора на месте",
+ "mutants": 5,
+ "detected": 5,
+ "false_accept": 0.0,
+ "by_class": {
+  "подменённый коэффициент": {
+   "n": 1,
+   "detected": 1
+  },
+  "инвертированное условие": {
+   "n": 1,
+   "detected": 1
+  },
+  "пропущенная граница": {
+   "n": 1,
+   "detected": 1
+  },
+  "неверный порядок вызовов": {
+   "n": 1,
+   "detected": 1
+  },
+  "потерянная ветка отказа": {
+   "n": 1,
+   "detected": 1
+  }
+ },
+ "results": [
+  {
+   "name": "attempts 3 → 1",
+   "class": "подменённый коэффициент",
+   "detected": true,
+   "detail": "retry_on_upload: запас повторов меньше трёх или не задан числом"
+  },
+  {
+   "name": "перепутаны возвраты успеха и исчерпания",
+   "class": "инвертированное условие",
+   "detected": true,
+   "detail": "retry_on_upload: успех не возвращает True внутри try"
+  },
+  {
+   "name": "range(attempts - 1)",
+   "class": "пропущенная граница",
+   "detected": true,
+   "detail": "retry_on_upload: нет цикла по range(attempts)"
+  },
+  {
+   "name": "send вне try",
+   "class": "неверный порядок вызовов",
+   "detected": true,
+   "detail": "retry_on_upload: отправка вне try: сбой не ловится"
+  },
+  {
+   "name": "исчерпание возвращает True",
+   "class": "потерянная ветка отказа",
+   "detected": true,
+   "detail": "retry_on_upload: исчерпание повторов не возвращает False после цикла"
+  }
+ ],
+ "inv_id": "INV-0001",
+ "bench": "bench/bench.json",
+ "registered": false
+}
