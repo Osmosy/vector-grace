@@ -122,6 +122,7 @@ def drift_gate(
     requirements: list[dict],
     evidence: list[dict],
     artifacts: dict[str, set[str]] | None = None,
+    span_index: dict[str, dict] | None = None,
 ) -> list[Finding]:
     """Три класса: устаревшее доказательство, недоказанное требование, осиротевшее.
 
@@ -221,6 +222,32 @@ def drift_gate(
                     {"req_id": rid, "inv_id": ev.get("inv_id")},
                 )
             )
+        source = ev.get("source_span")
+        if source and span_index is not None:
+            current_span = span_index.get(str(source.get("span_id")))
+            where = {
+                "req_id": rid,
+                "file": source.get("file"),
+                "page": source.get("page"),
+            }
+            if current_span is None:
+                findings.append(
+                    Finding(
+                        "orphaned_source_span",
+                        BLOCK,
+                        "спан источника исчез: страница пересобрана или удалена",
+                        where,
+                    )
+                )
+            elif current_span.get("sha256") != source.get("span_sha256"):
+                findings.append(
+                    Finding(
+                        "stale_source_span",
+                        BLOCK,
+                        "текст страницы источника изменился после доказательства",
+                        where,
+                    )
+                )
 
     for path, ids in sorted((artifacts or {}).items()):
         for rid in sorted(ids):

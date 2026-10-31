@@ -146,6 +146,18 @@ class TestAtomize(unittest.TestCase):
         self.assertEqual(spans.obligations("должность менеджера"), [])
         self.assertEqual(spans.obligations("Возможно, обсудим позже"), [])
 
+    def test_page_spans(self):
+        data = (
+            "intro\n\n## Слайд 1 — Раз\nтекст 1\n\n## Слайд 2 — Два\n| a | 1 |\n"
+        ).encode()
+        recs = list(spans.records(data, "deck.md", split="pages"))
+        self.assertEqual([r["page"] for r in recs], [1, 2])
+        self.assertTrue(recs[0]["text"].startswith("## Слайд 1"))
+        self.assertEqual(
+            data[recs[1]["span"][0] : recs[1]["span"][1]].decode(), recs[1]["text"]
+        )
+        self.assertTrue(recs[1]["text"].endswith("| a | 1 |"))
+
     def test_span_id_is_content_addressed(self):
         data = b"one\n\ntwo\n"
         first = list(spans.records(data, "f.md"))
@@ -272,6 +284,24 @@ class TestDrift(unittest.TestCase):
         codes = {f.code for f in findings}
         self.assertIn("invalid_record", codes)
         self.assertTrue(gates.has_block(findings))
+
+    def test_source_span_stale_and_orphan(self):
+        rec = make_requirement()
+        index = {"deck.md#aaa": {"span_id": "deck.md#aaa", "sha256": "b" * 64}}
+        span_ref = {
+            "span_id": "deck.md#aaa", "file": "deck.md", "page": 5,
+            "span": [0, 10], "span_sha256": "b" * 64,
+        }
+        ev = make_evidence(rec, source_span=span_ref)
+        self.assertEqual(gates.drift_gate([rec], [ev], None, index), [])
+        stale = make_evidence(rec, source_span=dict(span_ref, span_sha256="c" * 64))
+        self.assertIn(
+            "stale_source_span", {f.code for f in gates.drift_gate([rec], [stale], None, index)}
+        )
+        gone = make_evidence(rec, source_span=dict(span_ref, span_id="deck.md#bbb"))
+        self.assertIn(
+            "orphaned_source_span", {f.code for f in gates.drift_gate([rec], [gone], None, index)}
+        )
 
     def test_artifact_reference_orphan(self):
         rec = make_requirement()
@@ -523,6 +553,20 @@ class TestCliEndToEnd(unittest.TestCase):
         self.assertIsNotNone(record["measured"])
         self.assertEqual(record["measured"]["false_accept"], 1.0)
         self.assertEqual(record["measured"]["mutants"], 1)
+
+    def test_stale_cache_blocks_coverage(self):
+        run_cli(self.root, "parse")
+        span_ids = [s["span_id"] for s in model.load_jsonl(self.root / "docs/registry/spans.jsonl")]
+        for sid, kind in ((span_ids[0], "background"), (span_ids[1], "requirement"),
+                          (span_ids[2], "background")):
+            run_cli(self.root, "verdict", "--span-id", sid, "--kind", kind, "--by", BY)
+        self.assertEqual(run_cli(self.root, "coverage")[0], 0)
+        (self.root / "notes" / "chat-2026-10-30.md").write_text(
+            "Клиент: нужен экспорт отчёта в CSV и в XLSX.\n", encoding="utf-8"
+        )
+        code, out = run_cli(self.root, "coverage")
+        self.assertEqual(code, 1)
+        self.assertIn("stale_span_cache", out)
 
     def test_open_verdict_requires_verbatim_quote(self):
         run_cli(self.root, "parse")

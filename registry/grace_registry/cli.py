@@ -26,8 +26,6 @@ from pathlib import Path
 
 from . import gates, measure as measure_mod, model, replay, spans as spans_mod
 
-_CHOICES_NON_REQ = ("question", "decision", "background", "duplicate", "open")
-
 
 class Layout:
     def __init__(self, root):
@@ -116,12 +114,13 @@ def cmd_parse(args, lay: Layout) -> int:
         if not path.is_file():
             return _fail(f"источник не найден: {rel}")
         data = path.read_bytes()
-        file_records = list(spans_mod.records(data, rel))
+        split = src.get("split") or args.split
+        file_records = list(spans_mod.records(data, rel, split=split))
         records.extend(file_records)
         modal = sum(
             1 for rec in file_records if spans_mod.obligations(rec["text"])
         )
-        print(f"{rel}: спанов {len(file_records)}, с модальностью {modal}")
+        print(f"{rel}: спанов {len(file_records)} ({split}), с модальностью {modal}")
     tmp = lay.spans.with_suffix(".jsonl.tmp")
     with tmp.open("w", encoding="utf-8") as fh:
         for rec in records:
@@ -304,6 +303,18 @@ def cmd_evidence(args, lay: Layout) -> int:
     if not (args.defeater or "").strip():
         return _fail("без defeater запись доказательства — декорация")
     code_root = Path(args.code_root).resolve() if args.code_root else lay.root
+    source_span = None
+    if args.source_span:
+        span = _span_index(lay).get(args.source_span)
+        if span is None:
+            return _fail(f"спан-источник {args.source_span} не найден; пересоберите parse")
+        source_span = {
+            "span_id": span["span_id"],
+            "file": span["file"],
+            "page": span.get("page"),
+            "span": span["span"],
+            "span_sha256": span["sha256"],
+        }
     measured = None
     for item in model.load_jsonl(lay.measurements):
         if item.get("inv_id") == args.inv and item.get("checker_sha256") == actual:
@@ -328,6 +339,7 @@ def cmd_evidence(args, lay: Layout) -> int:
         "result": args.result,
         "defeater": args.defeater,
         "detail": args.detail,
+        "source_span": source_span,
         "measured": measured,
         "by": args.by,
         "at": _now(),
@@ -417,7 +429,39 @@ def cmd_coverage(args, lay: Layout) -> int:
     spans = model.load_jsonl(lay.spans)
     if not spans:
         return _fail("спаны не собраны: сначала grace.py parse")
-    findings = gates.coverage_gate(spans, model.load_jsonl(lay.verdicts))
+    roles = {str(s.get("file")): str(s.get("role") or "requirements") for s in _load_sources(lay)}
+    cache_sha: dict[str, str] = {}
+    for span in spans:
+        cache_sha.setdefault(str(span.get("file")), str(span.get("file_sha256")))
+    freshness: list[gates.Finding] = []
+    for src in _load_sources(lay):
+        rel = str(src.get("file"))
+        path = lay.root / rel
+        if not path.is_file():
+            freshness.append(
+                gates.Finding("missing_source", gates.BLOCK, "источник пропал", {"file": rel})
+            )
+            continue
+        actual = spans_mod.sha256_file(path)
+        if cache_sha.get(rel) and cache_sha[rel] != actual:
+            freshness.append(
+                gates.Finding(
+                    "stale_span_cache",
+                    gates.BLOCK,
+                    "файл изменился после parse: спаны не соответствуют источникам",
+                    {"file": rel},
+                )
+            )
+    required = [
+        s for s in spans if roles.get(str(s.get("file")), "requirements") == "requirements"
+    ]
+    evidence_spans = len(spans) - len(required)
+    findings = freshness + gates.coverage_gate(required, model.load_jsonl(lay.verdicts))
+    if not args.json:
+        print(
+            f"корпус требований: {len(required)} спанов, корпус доказательств: "
+            f"{evidence_spans} спанов (вердиктов не требует)"
+        )
     return _print_findings(findings, args.json, "coverage")
 
 
@@ -435,7 +479,12 @@ def cmd_drift(args, lay: Layout) -> int:
         for path, ids in artifacts.items()
         if not path.startswith("docs/registry/")
     }
-    findings = gates.drift_gate(records, evidence, artifacts)
+    findings = gates.drift_gate(
+        records,
+        evidence,
+        artifacts,
+        span_index={s["span_id"]: s for s in model.load_jsonl(lay.spans) if "span_id" in s},
+    )
     return _print_findings(findings, args.json, "drift")
 
 
@@ -509,11 +558,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", default=".", help="корень проверяемого проекта")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("parse", help="источники → спаны")
+    sub.add_parser("parse", help="источники → спаны").add_argument(
+        "--split", default="paragraph", choices=("paragraph", "pages"),
+        help="абзацы (по умолчанию) или страницы колоды по заголовкам «## Слайд N»",
+    )
 
     v = sub.add_parser("verdict", help="вердикт по спану")
     v.add_argument("--span-id", required=True)
-    v.add_argument("--kind", required=True, choices=_CHOICES_NON_REQ)
+    v.add_argument("--kind", required=True, choices=model.KINDS)
     v.add_argument("--quote")
     v.add_argument("--note")
     v.add_argument("--by", required=True)
@@ -555,6 +607,7 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--result", required=True, choices=("pass", "fail"))
     e.add_argument("--defeater", required=True)
     e.add_argument("--detail")
+    e.add_argument("--source-span", help="спан источника, на котором стоит доказательство")
     e.add_argument("--code-root")
     e.add_argument("--by", required=True)
 

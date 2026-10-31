@@ -97,11 +97,34 @@ def obligations(text: str) -> list[str]:
     return out
 
 
-def records(data: bytes, file: str) -> Iterator[dict]:
+_PAGE_HEADING = re.compile(r"(?m)^##[ \t]+(?:Слайд|Slide|Страница|Page)[ \t]+(\d+)[^\n]*$")
+
+
+def page_spans(data: bytes) -> list[tuple[int, Span]]:
+    """Спан = страница колоды. Колоды режутся по заголовкам, а не по абзацам."""
+    text = data.decode("utf-8")
+    marks = [(int(m.group(1)), m.start()) for m in _PAGE_HEADING.finditer(text)]
+    out: list[tuple[int, Span]] = []
+    for index, (page, start_char) in enumerate(marks):
+        end_char = marks[index + 1][1] if index + 1 < len(marks) else len(text)
+        chunk = text[start_char:end_char].rstrip("\n")
+        start = len(text[:start_char].encode("utf-8"))
+        end = start + len(chunk.encode("utf-8"))
+        out.append((page, Span(start, end, sha256_bytes(data[start:end]))))
+    return out
+
+
+def records(data: bytes, file: str, split: str = "paragraph") -> Iterator[dict]:
     """Записи spans.jsonl для одного источника. Это кэш, его можно пересобрать."""
     file_sha = sha256_bytes(data)
-    for span in atomize(data):
-        yield {
+    if split == "pages":
+        pairs = page_spans(data)
+    elif split == "paragraph":
+        pairs = [(None, span) for span in atomize(data)]
+    else:
+        raise ValueError(f"неизвестная разбивка: {split}")
+    for page, span in pairs:
+        record = {
             "span_id": span_id(file, span.sha256),
             "file": file,
             "file_sha256": file_sha,
@@ -109,3 +132,6 @@ def records(data: bytes, file: str) -> Iterator[dict]:
             "sha256": span.sha256,
             "text": data[span.start : span.end].decode("utf-8"),
         }
+        if page is not None:
+            record["page"] = page
+        yield record
