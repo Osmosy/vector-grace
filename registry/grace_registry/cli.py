@@ -225,6 +225,11 @@ def cmd_revise(args, lay: Layout) -> int:
         # superseded_by при живом статусе, и model.problems() её отвергает
         if args.status != "superseded" and not args.superseded_by:
             new["superseded_by"] = None
+    if args.kind:
+        new["kind"] = args.kind
+        # strength определён только для обещаний: у определения его быть не должно
+        if args.kind not in model.OBLIGATION_KINDS:
+            new["strength"] = None
     if args.owner is not None:
         new["owner"] = args.owner
     if args.deadline is not None:
@@ -237,7 +242,7 @@ def cmd_revise(args, lay: Layout) -> int:
     if problems:
         return _fail(f"{args.req} rev {new['rev']}: " + "; ".join(problems))
     model.append_jsonl(lay.requirements, new)
-    print(f"{args.req}: ревизия {new['rev']} → {new['status']}")
+    print(f"{args.req}: ревизия {new['rev']} → {new['status']}, вид {new['kind']}")
     return 0
 
 
@@ -587,6 +592,8 @@ def build_parser() -> argparse.ArgumentParser:
     r = sub.add_parser("revise", help="новая ревизия требования")
     r.add_argument("--req", required=True)
     r.add_argument("--status", choices=model.STATUSES)
+    r.add_argument("--kind", choices=model.KINDS,
+                   help="сменить вид записи, например requirement → definition")
     r.add_argument("--owner")
     r.add_argument("--deadline")
     r.add_argument("--superseded-by")

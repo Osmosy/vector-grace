@@ -158,6 +158,9 @@ def drift_gate(
         by_req.setdefault(str(ev.get("req_id")), []).append(ev)
 
     for rid, rec in sorted(live.items()):
+        # определение — не обещание: доказательств оно не требует, живым остаётся
+        if rec.get("kind") not in model.OBLIGATION_KINDS:
+            continue
         status = rec.get("status")
         current = rec.get("req_hash")
         evs = by_req.get(rid, [])

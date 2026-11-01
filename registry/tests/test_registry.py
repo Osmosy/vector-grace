@@ -439,6 +439,46 @@ class TestMeasure(unittest.TestCase):
                 measure.load_bench(path)
 
 
+class TestDefinitionKind(unittest.TestCase):
+    """Определение — живая запись без обещания: доказательств не требует, из счёта выпадает."""
+
+    def _record(self, **extra) -> dict:
+        base = {
+            "req_id": "REQ-0001", "rev": 1, "kind": "requirement", "status": "elicited",
+            "strength": "must", "raw_text": "x", "req_hash": model.req_hash("x"),
+            "source": {"file": "a.md", "span": [0, 1], "sha256": "0" * 64,
+                       "channel": "document", "date": "2026-11-02", "speaker": "t"},
+            "invariants": [], "owner": None, "deadline": None,
+            "superseded_by": None, "supersedes": None,
+        }
+        base.update(extra)
+        return base
+
+    def test_definition_does_not_need_evidence(self) -> None:
+        rec = self._record(kind="definition", strength=None)
+        self.assertEqual(model.problems(rec), [])
+        findings = gates.drift_gate([rec], [])
+        self.assertEqual([f.code for f in findings], [])
+
+    def test_requirement_without_evidence_still_blocks(self) -> None:
+        rec = self._record()
+        findings = gates.drift_gate([rec], [])
+        self.assertIn("unproven_requirement", [f.code for f in findings])
+
+    def test_definition_cannot_carry_strength(self) -> None:
+        rec = self._record(kind="definition", strength="must")
+        self.assertTrue(any("strength" in p for p in model.problems(rec)))
+
+    def test_definition_is_alive_and_keeps_evidence(self) -> None:
+        rec = self._record(kind="definition", strength=None)
+        live = model.live_requirements([rec])
+        self.assertIn("REQ-0001", live)
+        ev = {"req_id": "REQ-0001", "inv_id": "INV-0001", "transition": "REQ-0001",
+              "result": "pass", "req_hash": rec["req_hash"]}
+        findings = gates.drift_gate([rec], [ev])
+        self.assertEqual([f for f in findings if f.code == "orphaned_evidence"], [])
+
+
 class TestCliEndToEnd(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
