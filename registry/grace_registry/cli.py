@@ -256,7 +256,7 @@ def cmd_invariant_add(args, lay: Layout) -> int:
             replay.INTEGRITY_EXIT,
         )
     existing = model.load_jsonl(lay.invariants)
-    inv_id = args.inv or f"INV-{len(existing) + 1:04d}"
+    inv_id = args.inv or model.next_inv_id(existing)
     record = {
         "inv_id": inv_id,
         "req_id": args.req,

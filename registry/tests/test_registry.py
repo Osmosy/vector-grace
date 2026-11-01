@@ -625,3 +625,13 @@ class TestCliEndToEnd(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NextInvIdTest(unittest.TestCase):
+    def test_id_follows_max_not_length(self) -> None:
+        """Номер по длине списка выдал бы занятый id после чистки журнала."""
+        records = [{"inv_id": "INV-0007"}, {"inv_id": "INV-0002"}, {"inv_id": "INV-0003"}]
+        self.assertEqual(model.next_inv_id(records), "INV-0008")
+
+    def test_empty_registry_starts_at_one(self) -> None:
+        self.assertEqual(model.next_inv_id([]), "INV-0001")

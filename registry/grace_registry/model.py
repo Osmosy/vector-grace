@@ -144,6 +144,20 @@ def live_requirements(records: list[dict]) -> dict[str, dict]:
     return best
 
 
+def next_inv_id(records: list[dict]) -> str:
+    """Следующий номер инварианта — по максимуму, а не по длине списка.
+
+    Номер по длине выдаёт уже занятые id, если журнал когда-либо чистили или читали
+    частично: два разных инварианта получают один id, и доказательства склеиваются.
+    """
+    top = 0
+    for rec in records:
+        inv = str(rec.get("inv_id") or "")
+        if inv.startswith("INV-") and inv[4:].isdigit():
+            top = max(top, int(inv[4:]))
+    return f"INV-{top + 1:04d}"
+
+
 def next_req_id(records: list[dict]) -> str:
     top = 0
     for rec in records:
