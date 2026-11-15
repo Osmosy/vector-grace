@@ -1,0 +1,4 @@
+interface:
+  display_name: "GRACE Hypothesis Scan"
+  short_description: "Pre-requirements hypothesis scanning and collapse"
+  brand_color: "#7A5CD6"
